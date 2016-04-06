@@ -11,7 +11,7 @@ static __attribute__((noreturn)) THD_FUNCTION(Thread2, arg)
 {
   event_listener_t el1;
   eventflags_t flags;
-  uint8_t buff[64];
+  uint8_t buff[128];
   
   chRegSetThreadName("USB");
 
@@ -37,14 +37,29 @@ static __attribute__((noreturn)) THD_FUNCTION(Thread2, arg)
     flags = chEvtGetAndClearFlagsI(&el1);
     chSysUnlock();
 
+    bool read = false;
+    unsigned int len = 0;
+    
     if (flags & CHN_INPUT_AVAILABLE)
     {
-      int len = chnReadTimeout((BaseChannel *)&SDU1, buff, 64, MS2ST(25));
-      chnWriteTimeout((BaseChannel *)&SDU1, buff, len, MS2ST(25));
+      read = true;
+
+      while(true)
+      {
+        len = chnReadTimeout((BaseChannel *)&SDU1, buff, sizeof(buff), TIME_IMMEDIATE);
+        if(len == 0 || len < sizeof(buff))
+          break;
+      }
+    }
+
+    if(read)
+    {
+      read = false;
+      chnWriteTimeout((BaseChannel *)&SDU1, buff, len, TIME_IMMEDIATE);
       palTogglePad(GPIOC, 13);
     }
     
-    chThdSleepMicroseconds(10);
+    //chThdSleepMicroseconds(10);
   }
 }
 

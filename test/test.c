@@ -31,10 +31,10 @@ static libusb_device_handle *handle;
 static uint8_t receiveBuf[64];
 
 // Works !
-uint8_t transferBuf[63];
+//uint8_t transferBuf[63];
 
 // Doesn't Work ?
-//uint8_t transferBuf[64];
+uint8_t transferBuf[64];
 
 uint16_t counter=0;
 
